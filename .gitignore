@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+
+# Build artifacts
+dist/
+build/
+.vite/
+
+# Local environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log
+yarn-error.log
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# One-off scripts that contain secrets — keep out of the deploy repo
+pythonHuhu.py

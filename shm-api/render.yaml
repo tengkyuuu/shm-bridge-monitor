@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: shm-api
+    env: node
+    region: oregon
+    plan: free
+    rootDir: web/shm-api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: TTN_WEBHOOK_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: PORT
+        value: 8080
