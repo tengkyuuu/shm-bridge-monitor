@@ -13,7 +13,7 @@ function fmt(value: number | null | undefined, digits: number, unit: string) {
   return `${Number(value).toFixed(digits)} ${unit}`;
 }
 
-export function CurrentReading({ rows, status }: Props) {
+export function CurrentReading({ rows, status, ageS }: Props) {
   const latest = rows[rows.length - 1];
 
   if (!latest) {
@@ -41,6 +41,7 @@ export function CurrentReading({ rows, status }: Props) {
       <div style={subRowStyle}>
         <SubStat label="acceleration" value={fmt(latest.accel_ms2, 3, 'm/s²')} dimmed={dimmed} />
         <SubStat label="velocity"     value={fmt(latest.velocity_ms, 4, 'm/s')}  dimmed={dimmed} />
+        <SubStat label="last seen"    value={`${ageS}s ago`} dimmed={false} />
       </div>
     </div>
   );

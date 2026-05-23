@@ -109,7 +109,7 @@ export default function App() {
   );
 }
 
-function ConnectionPill({ status, ageS }: { status: Status; ageS: number }) {
+function ConnectionPill({ status }: { status: Status; ageS: number }) {
   if (status === 'no-data') {
     return (
       <span style={pillStyle('offline')}>
@@ -119,9 +119,9 @@ function ConnectionPill({ status, ageS }: { status: Status; ageS: number }) {
     );
   }
   const label =
-    status === 'live'    ? `Live · ${ageS}s ago`
-  : status === 'stale'   ? `Stale · ${ageS}s ago`
-  :                        `Offline · ${ageS}s ago`;
+    status === 'live'    ? 'Live'
+  : status === 'stale'   ? 'Stale'
+  :                        'Offline';
   return (
     <span style={pillStyle(status)}>
       <span style={dotStyle(status)} className={status === 'offline' ? 'status-dot-pulse' : undefined} />
