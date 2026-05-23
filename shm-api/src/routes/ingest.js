@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { sb } from '../lib/supabase.js';
-import { decodeDeflection } from '../lib/decode.js';
+import { decodePayload } from '../lib/decode.js';
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.post('/ttn', requireSecret, async (req, res) => {
   if (typeof b64 !== 'string') return res.status(400).send('missing frm_payload');
 
   const raw = Buffer.from(b64, 'base64');
-  if (raw.length !== 2) return res.status(400).send('bad length');
+  if (raw.length !== 2 && raw.length !== 6) return res.status(400).send('bad length');
 
   const devEuiRaw = m.end_device_ids?.dev_eui;
   if (typeof devEuiRaw !== 'string') return res.status(400).send('missing dev_eui');
@@ -35,12 +35,13 @@ router.post('/ttn', requireSecret, async (req, res) => {
   if (deviceErr) return res.status(500).send(deviceErr.message);
 
   const decoded = m.uplink_message.decoded_payload ?? {};
+  const fallback = decodePayload(raw);
   const reading = {
     device_id:     device.id,
     received_at:   m.uplink_message.received_at,
-    deflection_mm: decoded.deflection_mm ?? decodeDeflection(raw),
-    accel_ms2:     decoded.accel_ms2   ?? null,
-    velocity_ms:   decoded.velocity_ms ?? null,
+    deflection_mm: decoded.deflection_mm ?? fallback.deflection_mm,
+    accel_ms2:     decoded.accel_ms2     ?? fallback.accel_ms2,
+    velocity_ms:   decoded.velocity_ms   ?? fallback.velocity_ms,
     f_cnt:         m.uplink_message.f_cnt ?? null,
     rssi:          m.uplink_message.rx_metadata?.[0]?.rssi ?? null,
     snr:           m.uplink_message.rx_metadata?.[0]?.snr  ?? null,
