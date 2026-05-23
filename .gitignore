@@ -25,3 +25,6 @@ Thumbs.db
 
 # One-off scripts that contain secrets — keep out of the deploy repo
 pythonHuhu.py
+
+# TTN credentials reference — kept at workspace root but never in any repo
+TTN_DEVICE_KEYS.md
