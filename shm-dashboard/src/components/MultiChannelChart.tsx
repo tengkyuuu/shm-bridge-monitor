@@ -1,5 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Reading } from '../supabase';
+import { useTheme } from '../theme';
 
 const WINDOW_MS = 30 * 60 * 1000;
 
@@ -12,12 +13,13 @@ type Channel = {
 };
 
 const CHANNELS: Channel[] = [
-  { key: 'accel_ms2',    title: 'Acceleration', unit: 'm/s²', color: '#ef4444', format: (v) => v.toFixed(3) },
-  { key: 'velocity_ms',  title: 'Velocity',     unit: 'm/s',  color: '#10b981', format: (v) => v.toFixed(4) },
-  { key: 'deflection_mm', title: 'Deflection',  unit: 'mm',   color: '#0070f3', format: (v) => v.toFixed(2) },
+  { key: 'accel_ms2',     title: 'Acceleration', unit: 'm/s²', color: '#ef4444', format: (v) => v.toFixed(3) },
+  { key: 'velocity_ms',   title: 'Velocity',     unit: 'm/s',  color: '#10b981', format: (v) => v.toFixed(4) },
+  { key: 'deflection_mm', title: 'Deflection',   unit: 'mm',   color: '#3b82f6', format: (v) => v.toFixed(2) },
 ];
 
 export function MultiChannelChart({ rows }: { rows: Reading[] }) {
+  const { theme } = useTheme();
   const cutoff = Date.now() - WINDOW_MS;
   const base = rows
     .map((r) => ({
@@ -28,8 +30,14 @@ export function MultiChannelChart({ rows }: { rows: Reading[] }) {
     }))
     .filter((d) => d.t >= cutoff);
 
+  const gridColor = theme === 'dark' ? '#262626' : '#ececec';
+  const axisColor = theme === 'dark' ? '#6b6b6b' : '#888888';
+  const tooltipBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
+  const tooltipBorder = theme === 'dark' ? '#383838' : '#d4d4d4';
+  const tooltipColor = theme === 'dark' ? '#fafafa' : '#0a0a0a';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {CHANNELS.map((c) => {
         const hasData = base.some((d) => d[c.key] != null);
         return (
@@ -43,16 +51,32 @@ export function MultiChannelChart({ rows }: { rows: Reading[] }) {
             <div style={{ width: '100%', height: 180 }}>
               <ResponsiveContainer>
                 <LineChart data={base} margin={{ top: 6, right: 16, bottom: 6, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                   <XAxis
                     dataKey="t"
                     type="number"
                     domain={['dataMin', 'dataMax']}
                     tickFormatter={(t) => new Date(t).toLocaleTimeString()}
                     scale="time"
+                    stroke={axisColor}
+                    tick={{ fill: axisColor, fontSize: 11 }}
                   />
-                  <YAxis unit={` ${c.unit}`} width={80} />
+                  <YAxis
+                    unit={` ${c.unit}`}
+                    width={80}
+                    stroke={axisColor}
+                    tick={{ fill: axisColor, fontSize: 11 }}
+                  />
                   <Tooltip
+                    contentStyle={{
+                      background: tooltipBg,
+                      border: `1px solid ${tooltipBorder}`,
+                      borderRadius: 8,
+                      color: tooltipColor,
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: tooltipColor }}
+                    itemStyle={{ color: tooltipColor }}
                     labelFormatter={(t) => new Date(t as number).toLocaleString()}
                     formatter={(v) => [v == null ? '—' : `${c.format(v as number)} ${c.unit}`, c.title]}
                   />
@@ -60,6 +84,7 @@ export function MultiChannelChart({ rows }: { rows: Reading[] }) {
                     type="monotone"
                     dataKey={c.key}
                     stroke={c.color}
+                    strokeWidth={2}
                     dot={false}
                     isAnimationActive={false}
                     connectNulls={false}
@@ -78,7 +103,7 @@ const titleRow: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  marginBottom: 4,
+  marginBottom: 6,
   paddingLeft: 4,
 };
 const titleSwatch: React.CSSProperties = {
@@ -87,13 +112,13 @@ const titleSwatch: React.CSSProperties = {
   height: 10,
   borderRadius: 2,
 };
-const titleText: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#333' };
-const titleUnit: React.CSSProperties = { fontSize: 13, color: '#888' };
+const titleText: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: 'var(--fg)' };
+const titleUnit: React.CSSProperties = { fontSize: 12, color: 'var(--fg-dim)' };
 const waitingPill: React.CSSProperties = {
   marginLeft: 'auto',
   fontSize: 11,
-  color: '#888',
-  background: '#f4f4f5',
+  color: 'var(--fg-dim)',
+  background: 'var(--subtle-bg)',
   padding: '2px 8px',
   borderRadius: 999,
 };

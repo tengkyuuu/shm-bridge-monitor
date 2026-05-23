@@ -26,13 +26,24 @@ router.post('/ttn', requireSecret, async (req, res) => {
   if (typeof devEuiRaw !== 'string') return res.status(400).send('missing dev_eui');
   const devEui = devEuiRaw.toUpperCase();
 
-  const { data: device, error: deviceErr } = await sb
+  // Look up the device; insert a new row only if it doesn't exist yet.
+  // This preserves any custom name the operator set in Supabase Table Editor.
+  let { data: device, error: deviceErr } = await sb
     .from('devices')
-    .upsert({ dev_eui: devEui, name: 'Bridge Node' }, { onConflict: 'dev_eui' })
     .select()
-    .single();
-
+    .eq('dev_eui', devEui)
+    .maybeSingle();
   if (deviceErr) return res.status(500).send(deviceErr.message);
+
+  if (!device) {
+    const { data: created, error: createErr } = await sb
+      .from('devices')
+      .insert({ dev_eui: devEui, name: 'JRMSU Bridge Sensor' })
+      .select()
+      .single();
+    if (createErr) return res.status(500).send(createErr.message);
+    device = created;
+  }
 
   const decoded = m.uplink_message.decoded_payload ?? {};
   const fallback = decodePayload(raw);

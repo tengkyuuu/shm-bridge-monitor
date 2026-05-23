@@ -22,13 +22,13 @@ export function CsvDownload({ apiBase, deviceId }: Props) {
     <div style={wrap}>
       <label style={field}>
         <span style={lbl}>From</span>
-        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} style={input} />
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
       </label>
       <label style={field}>
         <span style={lbl}>To</span>
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} style={input} />
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </label>
-      <a href={href} target="_blank" rel="noreferrer" style={btn}>
+      <a href={href} target="_blank" rel="noreferrer" className="csv-btn">
         Download CSV
       </a>
     </div>
@@ -41,19 +41,10 @@ const wrap: React.CSSProperties = {
   alignItems: 'center',
   flexWrap: 'wrap',
 };
-const field: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14 };
-const lbl: React.CSSProperties = { color: '#666' };
-const input: React.CSSProperties = {
-  padding: '6px 8px',
-  borderRadius: 6,
-  border: '1px solid #ccc',
-  background: '#fff',
+const field: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  fontSize: 13,
 };
-const btn: React.CSSProperties = {
-  padding: '8px 14px',
-  background: '#111',
-  color: '#fff',
-  borderRadius: 8,
-  textDecoration: 'none',
-  fontSize: 14,
-};
+const lbl: React.CSSProperties = { color: 'var(--fg-muted)', fontWeight: 500 };

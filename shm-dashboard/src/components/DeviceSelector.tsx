@@ -8,25 +8,19 @@ type Props = {
 
 export function DeviceSelector({ devices, value, onChange }: Props) {
   if (devices.length === 0) {
-    return <span style={{ color: '#888', fontSize: 14 }}>No devices yet</span>;
+    return <span style={{ color: 'var(--fg-dim)', fontSize: 13 }}>No devices yet</span>;
   }
 
+  // Hide the selector when there's only one device — name is shown in header
+  if (devices.length === 1) return null;
+
   return (
-    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-      <span style={{ color: '#666' }}>Device</span>
-      <select
-        value={value ?? ''}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{
-          padding: '6px 8px',
-          borderRadius: 6,
-          border: '1px solid #ccc',
-          background: '#fff',
-        }}
-      >
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+      <span style={{ color: 'var(--fg-muted)', fontWeight: 500 }}>Device</span>
+      <select value={value ?? ''} onChange={(e) => onChange(Number(e.target.value))}>
         {devices.map((d) => (
           <option key={d.id} value={d.id}>
-            {d.name} ({d.dev_eui})
+            {d.name}
           </option>
         ))}
       </select>
