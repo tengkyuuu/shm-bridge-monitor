@@ -86,7 +86,9 @@ export function MultiChannelChart({ rows }: { rows: Reading[] }) {
                     stroke={c.color}
                     strokeWidth={2}
                     dot={false}
-                    isAnimationActive={false}
+                    isAnimationActive={true}
+                    animationDuration={700}
+                    animationEasing="ease-out"
                     connectNulls={false}
                   />
                 </LineChart>

@@ -1,4 +1,5 @@
 import type { Reading } from '../supabase';
+import { useTweenedNumber } from '../lib/useTweenedNumber';
 
 type Status = 'live' | 'stale' | 'offline' | 'no-data';
 
@@ -7,11 +8,6 @@ type Props = {
   status: Status;
   ageS: number;
 };
-
-function fmt(value: number | null | undefined, digits: number, unit: string) {
-  if (value == null) return `— ${unit}`;
-  return `${Number(value).toFixed(digits)} ${unit}`;
-}
 
 export function CurrentReading({ rows, status, ageS }: Props) {
   const latest = rows[rows.length - 1];
@@ -30,18 +26,33 @@ export function CurrentReading({ rows, status, ageS }: Props) {
   const isStale = status === 'stale';
   const dimmed = isOffline || isStale;
 
+  // Smoothly tween the displayed values between LoRa packets so the dashboard
+  // *feels* continuous even though packets arrive every 10s. When the sensor is
+  // offline, `latest` doesn't change, so the tween naturally holds the last value.
+  const animatedDeflection = useTweenedNumber(Number(latest.deflection_mm), 800);
+  const animatedAccel      = useTweenedNumber(latest.accel_ms2 == null ? 0 : Number(latest.accel_ms2), 800);
+  const animatedVelocity   = useTweenedNumber(latest.velocity_ms == null ? 0 : Number(latest.velocity_ms), 800);
+
   return (
     <div style={cardStyle(isOffline)}>
       <div style={labelStyle}>Current deflection</div>
 
       <div style={{ ...bigStyle, opacity: dimmed ? 0.4 : 1, transition: 'opacity 200ms ease' }}>
-        {Number(latest.deflection_mm).toFixed(2)} mm
+        {animatedDeflection.toFixed(2)} mm
       </div>
 
       <div style={subRowStyle}>
-        <SubStat label="acceleration" value={fmt(latest.accel_ms2, 3, 'm/s²')} dimmed={dimmed} />
-        <SubStat label="velocity"     value={fmt(latest.velocity_ms, 4, 'm/s')}  dimmed={dimmed} />
-        <SubStat label="last seen"    value={`${ageS}s ago`} dimmed={false} />
+        <SubStat
+          label="acceleration"
+          value={latest.accel_ms2 == null ? '— m/s²' : `${animatedAccel.toFixed(3)} m/s²`}
+          dimmed={dimmed}
+        />
+        <SubStat
+          label="velocity"
+          value={latest.velocity_ms == null ? '— m/s' : `${animatedVelocity.toFixed(4)} m/s`}
+          dimmed={dimmed}
+        />
+        <SubStat label="last seen" value={`${ageS}s ago`} dimmed={false} />
       </div>
     </div>
   );
