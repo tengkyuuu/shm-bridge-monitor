@@ -13,7 +13,7 @@ function fmt(value: number | null | undefined, digits: number, unit: string) {
   return `${Number(value).toFixed(digits)} ${unit}`;
 }
 
-export function CurrentReading({ rows, status, ageS }: Props) {
+export function CurrentReading({ rows, status }: Props) {
   const latest = rows[rows.length - 1];
 
   if (!latest) {
@@ -26,32 +26,21 @@ export function CurrentReading({ rows, status, ageS }: Props) {
     );
   }
 
+  const isOffline = status === 'offline' || status === 'no-data';
   const isStale = status === 'stale';
-  const isOffline = status === 'offline';
+  const dimmed = isOffline || isStale;
 
   return (
     <div style={cardStyle(isOffline)}>
-      <div style={labelRow}>
-        <div style={labelStyle}>Current deflection</div>
-        {(isStale || isOffline) ? (
-          <div style={warningTextStyle(isOffline)}>
-            {isOffline
-              ? `⚠ No data for ${ageS}s — sensor likely offline`
-              : `Last reading ${ageS}s ago — connection slow`}
-          </div>
-        ) : null}
-      </div>
+      <div style={labelStyle}>Current deflection</div>
 
-      <div style={bigStyle}>
-        <span style={isOffline ? { opacity: 0.45 } : undefined}>
-          {Number(latest.deflection_mm).toFixed(2)} mm
-        </span>
+      <div style={{ ...bigStyle, opacity: dimmed ? 0.4 : 1, transition: 'opacity 200ms ease' }}>
+        {Number(latest.deflection_mm).toFixed(2)} mm
       </div>
 
       <div style={subRowStyle}>
-        <SubStat label="acceleration" value={fmt(latest.accel_ms2, 3, 'm/s²')} dimmed={isOffline} />
-        <SubStat label="velocity"     value={fmt(latest.velocity_ms, 4, 'm/s')}  dimmed={isOffline} />
-        <SubStat label="last seen"    value={`${ageS}s ago`} dimmed={false} />
+        <SubStat label="acceleration" value={fmt(latest.accel_ms2, 3, 'm/s²')} dimmed={dimmed} />
+        <SubStat label="velocity"     value={fmt(latest.velocity_ms, 4, 'm/s')}  dimmed={dimmed} />
       </div>
     </div>
   );
@@ -59,7 +48,7 @@ export function CurrentReading({ rows, status, ageS }: Props) {
 
 function SubStat({ label, value, dimmed }: { label: string; value: string; dimmed: boolean }) {
   return (
-    <div style={{ ...subStat, opacity: dimmed ? 0.5 : 1 }}>
+    <div style={{ ...subStat, opacity: dimmed ? 0.4 : 1 }}>
       <span style={subStatLabel}>{label}</span>
       <span style={subStatValue}>{value}</span>
     </div>
@@ -77,13 +66,6 @@ function cardStyle(offline = false): React.CSSProperties {
   };
 }
 
-const labelRow: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  flexWrap: 'wrap',
-  gap: 12,
-};
 const labelStyle: React.CSSProperties = {
   fontSize: 12,
   color: 'var(--fg-muted)',
@@ -94,7 +76,7 @@ const labelStyle: React.CSSProperties = {
 const bigStyle: React.CSSProperties = {
   fontSize: 64,
   fontWeight: 700,
-  margin: '6px 0 12px',
+  margin: '6px 0 16px',
   fontVariantNumeric: 'tabular-nums',
   letterSpacing: -1,
   lineHeight: 1.05,
@@ -123,11 +105,3 @@ const subStatValue: React.CSSProperties = {
   fontVariantNumeric: 'tabular-nums',
   fontWeight: 500,
 };
-
-function warningTextStyle(offline: boolean): React.CSSProperties {
-  return {
-    fontSize: 13,
-    fontWeight: 600,
-    color: offline ? 'var(--status-offline)' : 'var(--status-stale)',
-  };
-}
