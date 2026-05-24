@@ -21,9 +21,9 @@ export function ReadingsTable({ rows }: { rows: Reading[] }) {
             <th style={thNum}>Accel (m/s²)</th>
             <th style={thNum}>Velocity (m/s)</th>
             <th style={thNum}>Deflection (mm)</th>
-            <th style={thNum}>f_cnt</th>
-            <th style={thNum}>RSSI</th>
-            <th style={thNum}>SNR</th>
+            <th style={thNum}>Packet #</th>
+            <th style={thNum}>Signal (dBm)</th>
+            <th style={thNum}>Quality (dB)</th>
           </tr>
         </thead>
         <tbody>
