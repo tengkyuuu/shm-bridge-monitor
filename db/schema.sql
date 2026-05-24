@@ -22,6 +22,7 @@ create table readings (
   f_cnt         integer,
   rssi          integer,
   snr           numeric(5,2),
+  latency_ms    integer,
   created_at    timestamptz not null default now()
 );
 

@@ -6,7 +6,7 @@ const router = Router();
 router.get('/readings.csv', async (req, res) => {
   let query = sb
     .from('readings')
-    .select('received_at, deflection_mm, accel_ms2, velocity_ms, f_cnt, rssi, snr, device_id')
+    .select('received_at, deflection_mm, accel_ms2, velocity_ms, f_cnt, rssi, snr, latency_ms, device_id')
     .order('received_at', { ascending: true })
     .limit(10000);
 
@@ -19,10 +19,10 @@ router.get('/readings.csv', async (req, res) => {
 
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="readings.csv"');
-  res.write('received_at,deflection_mm,accel_ms2,velocity_ms,f_cnt,rssi,snr\n');
+  res.write('received_at,deflection_mm,accel_ms2,velocity_ms,f_cnt,rssi,snr,latency_ms\n');
   for (const r of data ?? []) {
     res.write(
-      `${r.received_at},${r.deflection_mm},${r.accel_ms2 ?? ''},${r.velocity_ms ?? ''},${r.f_cnt ?? ''},${r.rssi ?? ''},${r.snr ?? ''}\n`
+      `${r.received_at},${r.deflection_mm},${r.accel_ms2 ?? ''},${r.velocity_ms ?? ''},${r.f_cnt ?? ''},${r.rssi ?? ''},${r.snr ?? ''},${r.latency_ms ?? ''}\n`
     );
   }
   res.end();

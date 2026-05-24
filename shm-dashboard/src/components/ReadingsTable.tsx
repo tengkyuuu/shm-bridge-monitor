@@ -24,6 +24,7 @@ export function ReadingsTable({ rows }: { rows: Reading[] }) {
             <th style={thNum}>Packet #</th>
             <th style={thNum}>Signal (dBm)</th>
             <th style={thNum}>Quality (dB)</th>
+            <th style={thNum}>Latency (ms)</th>
           </tr>
         </thead>
         <tbody>
@@ -36,6 +37,7 @@ export function ReadingsTable({ rows }: { rows: Reading[] }) {
               <td style={tdNum}>{r.f_cnt ?? ''}</td>
               <td style={tdNum}>{r.rssi ?? ''}</td>
               <td style={tdNum}>{r.snr ?? ''}</td>
+              <td style={tdNum}>{r.latency_ms ?? ''}</td>
             </tr>
           ))}
         </tbody>

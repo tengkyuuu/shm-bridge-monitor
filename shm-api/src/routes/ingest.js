@@ -47,6 +47,16 @@ router.post('/ttn', requireSecret, async (req, res) => {
 
   const decoded = m.uplink_message.decoded_payload ?? {};
   const fallback = decodePayload(raw);
+
+  // Pipeline latency: ms between TTN receiving the LoRa uplink and this API
+  // persisting the row. Includes TTN → Render webhook delivery + this handler's
+  // pre-write work. Does NOT include browser propagation (Realtime push) since
+  // that depends on the viewer.
+  const receivedAtMs = Date.parse(m.uplink_message.received_at);
+  const latencyMs = Number.isFinite(receivedAtMs)
+    ? Math.max(0, Date.now() - receivedAtMs)
+    : null;
+
   const reading = {
     device_id:     device.id,
     received_at:   m.uplink_message.received_at,
@@ -56,6 +66,7 @@ router.post('/ttn', requireSecret, async (req, res) => {
     f_cnt:         m.uplink_message.f_cnt ?? null,
     rssi:          m.uplink_message.rx_metadata?.[0]?.rssi ?? null,
     snr:           m.uplink_message.rx_metadata?.[0]?.snr  ?? null,
+    latency_ms:    latencyMs,
   };
 
   const { error: insertErr } = await sb.from('readings').insert(reading);

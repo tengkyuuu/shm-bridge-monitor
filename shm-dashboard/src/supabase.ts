@@ -10,6 +10,7 @@ export type Reading = {
   f_cnt: number | null;
   rssi: number | null;
   snr: number | null;
+  latency_ms: number | null;
   created_at: string;
 };
 
