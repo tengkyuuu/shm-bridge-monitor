@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDevices } from './lib/useDevices';
 import { useReadingsStream } from './lib/useReadingsStream';
 import { CurrentReading } from './components/CurrentReading';
@@ -52,6 +52,29 @@ export default function App() {
   const latest = rows[rows.length - 1];
   const { status, ageS } = useStatus(latest?.received_at);
 
+  // Pipeline latency: ms between TTN receiving the packet and the row arriving
+  // in this browser. Only meaningful for rows pushed via Realtime — the very
+  // first fetch can include rows that are hours old. We skip the first
+  // observed row and only measure subsequent updates.
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const seenIdsRef = useRef<Set<number>>(new Set());
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!latest) return;
+    if (!initializedRef.current) {
+      // Mark all currently-loaded rows as "already seen" so we don't
+      // mis-attribute initial-fetch ages to latency.
+      rows.forEach((r) => seenIdsRef.current.add(r.id));
+      initializedRef.current = true;
+      return;
+    }
+    if (!seenIdsRef.current.has(latest.id)) {
+      seenIdsRef.current.add(latest.id);
+      const lag = Date.now() - new Date(latest.received_at).getTime();
+      setLatencyMs(Math.max(0, lag));
+    }
+  }, [latest?.id, rows, latest]);
+
   return (
     <div style={pageStyle}>
       <header style={headerStyle}>
@@ -67,7 +90,15 @@ export default function App() {
             <div style={deviceMetaStyle}>
               <span>DevEUI {selectedDevice.dev_eui}</span>
               <span style={dotSep}>·</span>
-              <ConnectionPill status={status} ageS={ageS} />
+              <ConnectionPill status={status} />
+              {latencyMs != null ? (
+                <>
+                  <span style={dotSep}>·</span>
+                  <span title="Cloud round-trip: TTN to dashboard">
+                    {latencyMs < 10_000 ? `${latencyMs} ms latency` : `${(latencyMs / 1000).toFixed(1)} s latency`}
+                  </span>
+                </>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -109,7 +140,7 @@ export default function App() {
   );
 }
 
-function ConnectionPill({ status }: { status: Status; ageS: number }) {
+function ConnectionPill({ status }: { status: Status }) {
   if (status === 'no-data') {
     return (
       <span style={pillStyle('offline')}>
